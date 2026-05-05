@@ -2,7 +2,7 @@
 
 Fieldwise Form Tutor is a small, static learning app that helps beginners practice common HTML form controls one step at a time. It is designed for people who may not know technical terms yet: every lesson explains where to click, what to type, and how to recover when something needs fixing.
 
-The app runs entirely in the browser and is ready to publish from the `docs/` directory with GitHub Pages.
+The app runs entirely in the browser and is published with GitHub Pages from the `gh-pages` branch.
 
 ## Features
 
@@ -76,10 +76,14 @@ If `fieldwise-language` is not set, the app chooses the first supported language
 
 ## Deployment
 
-This repository is ready for GitHub Pages:
+This repository is ready for GitHub Pages. The published site is built from the contents of `docs/` and pushed to the `gh-pages` branch.
 
-1. Push the repository to GitHub.
-2. Open the repository settings.
-3. Enable GitHub Pages for the `docs/` directory on the default branch.
+To deploy after changing the app:
+
+```bash
+git subtree push --prefix docs origin gh-pages
+```
+
+If this is the first deployment in a fresh fork, open the repository settings and set GitHub Pages to deploy from the `gh-pages` branch.
 
 No build command is needed.
