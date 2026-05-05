@@ -4,6 +4,8 @@ Fieldwise Form Tutor is a small, static learning app that helps beginners practi
 
 The app runs entirely in the browser and is published with GitHub Pages from the `gh-pages` branch.
 
+Live site: [https://artifexet.github.io/fieldwise-form-tutor/](https://artifexet.github.io/fieldwise-form-tutor/)
+
 ## Features
 
 - Beginner-friendly lessons for text fields, textareas, email, phone, numbers, sliders, dates, times, checkboxes, switches, radio buttons, selects, file uploads, validation, demo captcha, passwords, URLs, search fields, color, month, week, `datetime-local`, and a larger multi-field form.

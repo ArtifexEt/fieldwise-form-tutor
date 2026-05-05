@@ -59,6 +59,7 @@ const elements = {
   trainingListTitle: document.querySelector("#trainingListTitle"),
   backHomeLabel: document.querySelector("#backHomeLabel"),
   coffeeLabel: document.querySelector("#coffeeLabel"),
+  repoLabel: document.querySelector("#repoLabel"),
   homeView: document.querySelector("#homeView"),
   lessonView: document.querySelector("#lessonView"),
   trainingGrid: document.querySelector("#trainingGrid"),
@@ -152,6 +153,7 @@ const shellCopy = {
     backHome: "Wróć do wyboru",
     nextTraining: "Następne szkolenie",
     coffee: "Postaw kawę autorowi",
+    repo: "Kod na GitHubie",
     completed: "Ukończone",
     continueFrom(index, total) {
       return `Kontynuuj: ekran ${index} z ${total}`;
@@ -308,6 +310,7 @@ const shellCopy = {
     backHome: "Back to lessons",
     nextTraining: "Next lesson",
     coffee: "Buy the author a coffee",
+    repo: "Code on GitHub",
     completed: "Complete",
     continueFrom(index, total) {
       return `Continue: screen ${index} of ${total}`;
@@ -523,6 +526,7 @@ function applyLanguageCopy() {
   elements.lessonProgressCluster.setAttribute("aria-label", copy.lessonProgressLabel);
   elements.nextTrainingButton.textContent = copy.nextTraining;
   elements.coffeeLabel.textContent = copy.coffee;
+  elements.repoLabel.textContent = copy.repo;
 }
 
 function handleLanguageSelection(event) {
