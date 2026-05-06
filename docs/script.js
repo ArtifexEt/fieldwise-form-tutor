@@ -8,8 +8,19 @@ const STORAGE_KEYS = {
   progress: "fieldwise-progress-v1"
 };
 
+const FONT_SCALE_VALUES = {
+  normal: "1",
+  large: "1.15",
+  xlarge: "1.3"
+};
+const FONT_SCALE_OPTIONS = Object.keys(FONT_SCALE_VALUES);
 const DEFAULT_LANGUAGE = "pl";
-const initialLanguage = resolveInitialLanguage(loadValue(STORAGE_KEYS.language, ""));
+const storedLanguage = loadValue(STORAGE_KEYS.language, "");
+const storedFontScale = loadValue(STORAGE_KEYS.fontScale, "");
+const initialLanguage = resolveInitialLanguage(storedLanguage);
+const initialFontScale = FONT_SCALE_OPTIONS.includes(storedFontScale) ? storedFontScale : "normal";
+const initialLanguagePreferenceChosen = Boolean(courseCatalogs[storedLanguage]);
+const initialFontScalePreferenceChosen = FONT_SCALE_OPTIONS.includes(storedFontScale);
 
 let trainings = courseCatalogs[initialLanguage] || courseCatalogs[DEFAULT_LANGUAGE];
 let trainingMap = new Map(trainings.map((training) => [training.id, training]));
@@ -20,7 +31,10 @@ const state = {
   currentSlideIndex: 0,
   completed: loadJSON(STORAGE_KEYS.completed, []),
   progress: loadJSON(STORAGE_KEYS.progress, {}),
-  fontScale: loadValue(STORAGE_KEYS.fontScale, "normal"),
+  fontScale: initialFontScale,
+  languagePreferenceChosen: initialLanguagePreferenceChosen,
+  fontScalePreferenceChosen: initialFontScalePreferenceChosen,
+  preferencesPanelExpanded: !(initialLanguagePreferenceChosen && initialFontScalePreferenceChosen),
   highContrast: loadValue(STORAGE_KEYS.highContrast, "false") === "true",
   successTimer: null,
   objectUrl: null
@@ -34,6 +48,10 @@ const elements = {
   appTitle: document.querySelector("#appTitle"),
   appLead: document.querySelector("#appLead"),
   accessibilityPanel: document.querySelector("#accessibilityPanel"),
+  preferencesToggle: document.querySelector("#preferencesToggle"),
+  preferencesToggleLabel: document.querySelector("#preferencesToggleLabel"),
+  preferencesToggleSummary: document.querySelector("#preferencesToggleSummary"),
+  preferenceControls: document.querySelector("#preferenceControls"),
   languageGroup: document.querySelector("#languageGroup"),
   languageLabel: document.querySelector("#languageLabel"),
   languagePicker: document.querySelector("#languagePicker"),
@@ -152,6 +170,14 @@ const shellCopy = {
     trainingListTitle: "Wybierz jedną prostą umiejętność",
     backHome: "Wróć do wyboru",
     nextTraining: "Następne szkolenie",
+    preferencesToggleOpen: "Ustawienia",
+    preferencesToggleClose: "Ukryj ustawienia",
+    preferencesSummary(language, fontSize) {
+      return `${language} · tekst: ${fontSize}`;
+    },
+    startCourse: "Zacznij kurs",
+    continueCourse: "Kontynuuj kurs",
+    repeatCourse: "Powtórz kurs",
     coffee: "Postaw kawę autorowi",
     repo: "Kod na GitHubie",
     completed: "Ukończone",
@@ -309,6 +335,14 @@ const shellCopy = {
     trainingListTitle: "Choose one simple skill",
     backHome: "Back to lessons",
     nextTraining: "Next lesson",
+    preferencesToggleOpen: "Preferences",
+    preferencesToggleClose: "Hide preferences",
+    preferencesSummary(language, fontSize) {
+      return `${language} · text: ${fontSize}`;
+    },
+    startCourse: "Start course",
+    continueCourse: "Continue course",
+    repeatCourse: "Repeat course",
     coffee: "Buy the author a coffee",
     repo: "Code on GitHub",
     completed: "Complete",
@@ -451,6 +485,7 @@ function bindGlobalEvents() {
   elements.slideCard.addEventListener("dragleave", handleDropzoneLeave);
   elements.slideCard.addEventListener("drop", handleDropzoneDrop);
   elements.languagePicker.addEventListener("click", handleLanguageSelection);
+  elements.preferencesToggle.addEventListener("click", togglePreferencesPanel);
   document.querySelector("#backHome").addEventListener("click", () => goHome());
   elements.nextTrainingButton.addEventListener("click", openNextTraining);
   elements.contrastToggle.addEventListener("click", toggleContrast);
@@ -527,6 +562,7 @@ function applyLanguageCopy() {
   elements.nextTrainingButton.textContent = copy.nextTraining;
   elements.coffeeLabel.textContent = copy.coffee;
   elements.repoLabel.textContent = copy.repo;
+  updatePreferencesPanelState();
 }
 
 function handleLanguageSelection(event) {
@@ -539,11 +575,15 @@ function handleLanguageSelection(event) {
 }
 
 function setLanguage(language) {
-  if (!courseCatalogs[language] || language === state.language) {
+  if (!courseCatalogs[language]) {
     return;
   }
 
+  const wasSetupComplete = hasCompletedPreferenceSetup();
+  const languageChanged = language !== state.language;
   state.language = language;
+  state.languagePreferenceChosen = true;
+  collapsePreferencesAfterNewSetup(wasSetupComplete);
   localStorage.setItem(STORAGE_KEYS.language, language);
   syncCourseCatalog();
   renderLanguagePicker();
@@ -561,7 +601,45 @@ function setLanguage(language) {
   }
 
   const option = languageOptions.find((item) => item.code === language);
-  announce(getCopy().languageChanged(option?.label || language));
+  if (languageChanged) {
+    announce(getCopy().languageChanged(option?.label || language));
+  }
+}
+
+function togglePreferencesPanel() {
+  if (!hasCompletedPreferenceSetup()) {
+    return;
+  }
+
+  state.preferencesPanelExpanded = !state.preferencesPanelExpanded;
+  updatePreferencesPanelState();
+}
+
+function hasCompletedPreferenceSetup() {
+  return state.languagePreferenceChosen && state.fontScalePreferenceChosen;
+}
+
+function collapsePreferencesAfterNewSetup(wasSetupComplete) {
+  if (!wasSetupComplete && hasCompletedPreferenceSetup()) {
+    state.preferencesPanelExpanded = false;
+  }
+}
+
+function updatePreferencesPanelState() {
+  const copy = getCopy();
+  const setupComplete = hasCompletedPreferenceSetup();
+  const isCollapsed = setupComplete && !state.preferencesPanelExpanded;
+  const language = languageOptions.find((item) => item.code === state.language);
+  const languageSummary = language ? `${language.flag} ${language.code.toUpperCase()}` : state.language.toUpperCase();
+  const fontSummary = copy.fontScale[state.fontScale] || copy.fontScale.normal;
+
+  elements.accessibilityPanel.classList.toggle("is-ready", setupComplete);
+  elements.accessibilityPanel.classList.toggle("is-collapsed", isCollapsed);
+  elements.preferencesToggle.setAttribute("aria-expanded", String(!isCollapsed));
+  elements.preferencesToggleLabel.textContent = isCollapsed
+    ? copy.preferencesToggleOpen
+    : copy.preferencesToggleClose;
+  elements.preferencesToggleSummary.textContent = copy.preferencesSummary(languageSummary, fontSummary);
 }
 
 function migrateCompletedProgress() {
@@ -756,6 +834,11 @@ function renderTrainingGrid() {
           ? Math.max(0, progress.highestSlideIndex + 1)
           : 0;
       const nextScreen = Math.min(progress.currentSlideIndex + 1, training.slides.length);
+      const actionLabel = isComplete
+        ? copy.repeatCourse
+        : progress.started
+          ? copy.continueCourse
+          : copy.startCourse;
       const inputTypes = [
         ...new Set(training.slides.flatMap((slide) => getSlideInputTypes(slide)))
       ].slice(0, 4);
@@ -764,7 +847,7 @@ function renderTrainingGrid() {
           type="button"
           class="training-tile ${isComplete ? "is-complete" : ""}"
           data-training-id="${training.id}"
-          aria-label="${training.number}. ${training.title}"
+          aria-label="${escapeHtml(`${training.number}. ${training.title}. ${actionLabel}`)}"
         >
           <span class="tile-index">${training.number}</span>
           <h3 class="tile-title">${training.title}</h3>
@@ -789,7 +872,11 @@ function renderTrainingGrid() {
               ? `<p class="tile-inputs"><strong>${copy.inputTypesPrefix}</strong> ${inputTypes.join(", ")}</p>`
               : ""
           }
-          ${isComplete ? `<div class="tile-status">${copy.completed}</div>` : ""}
+          <span class="tile-action" aria-hidden="true">
+            <span>${actionLabel}</span>
+            <span class="tile-action-arrow">→</span>
+          </span>
+          ${isComplete ? `<span class="tile-status">${copy.completed}</span>` : ""}
         </button>
       `;
     })
@@ -826,7 +913,7 @@ function openTraining(id, options = {}) {
     window.location.hash = `szkolenie/${id}`;
   }
 
-  renderCurrentSlide();
+  renderCurrentSlide({ scrollToStart: true });
 }
 
 function goHome(options = {}) {
@@ -881,6 +968,9 @@ function renderCurrentSlide(options = {}) {
 
   elements.slideCard.innerHTML = renderSlide(training, slide);
   focusSlide();
+  if (options.scrollToStart) {
+    scrollLessonToStart();
+  }
   announce(
     `${training.title}. ${slide.title}. ${getCopy().progressScreens(
       state.currentSlideIndex + 1,
@@ -1801,7 +1891,14 @@ function markTrainingComplete(id) {
 }
 
 function setFontScale(value) {
+  if (!FONT_SCALE_OPTIONS.includes(value)) {
+    return;
+  }
+
+  const wasSetupComplete = hasCompletedPreferenceSetup();
   state.fontScale = value;
+  state.fontScalePreferenceChosen = true;
+  collapsePreferencesAfterNewSetup(wasSetupComplete);
   localStorage.setItem(STORAGE_KEYS.fontScale, value);
   applyPreferences();
   announce(getCopy().fontChanged(value));
@@ -1815,13 +1912,7 @@ function toggleContrast() {
 }
 
 function applyPreferences() {
-  const scaleMap = {
-    normal: "1",
-    large: "1.15",
-    xlarge: "1.3"
-  };
-
-  document.documentElement.style.setProperty("--font-scale", scaleMap[state.fontScale] || "1");
+  document.documentElement.style.setProperty("--font-scale", FONT_SCALE_VALUES[state.fontScale] || "1");
   elements.body.dataset.contrast = state.highContrast ? "high" : "default";
   elements.contrastToggle.setAttribute("aria-pressed", String(state.highContrast));
 
@@ -1829,6 +1920,7 @@ function applyPreferences() {
     const active = button.dataset.fontScale === state.fontScale;
     button.setAttribute("aria-pressed", String(active));
   });
+  updatePreferencesPanelState();
 }
 
 function renderSlideTags(tags = []) {
@@ -1846,15 +1938,33 @@ function renderSlideTags(tags = []) {
 function focusSlide() {
   requestAnimationFrame(() => {
     const firstInteractive = elements.slideCard.querySelector(
-      "input, textarea, select, button, [tabindex]"
+      "input:not([disabled]), textarea:not([disabled]), select:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex='-1'])"
     );
 
     if (firstInteractive) {
-      firstInteractive.focus();
+      focusWithoutScroll(firstInteractive);
       return;
     }
 
-    elements.slideCard.focus();
+    focusWithoutScroll(elements.slideCard);
+  });
+}
+
+function focusWithoutScroll(element) {
+  try {
+    element.focus({ preventScroll: true });
+  } catch (error) {
+    element.focus();
+  }
+}
+
+function scrollLessonToStart() {
+  requestAnimationFrame(() => {
+    const top = elements.lessonView.getBoundingClientRect().top + window.scrollY;
+    window.scrollTo({
+      top: Math.max(0, top - 8),
+      behavior: "auto"
+    });
   });
 }
 
