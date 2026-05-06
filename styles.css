@@ -181,6 +181,11 @@ a {
   align-self: start;
 }
 
+.preference-controls {
+  display: grid;
+  gap: 1rem;
+}
+
 .control-group {
   display: grid;
   gap: 0.55rem;
@@ -199,6 +204,7 @@ a {
 
 .control-chip,
 .flag-button,
+.preferences-toggle,
 .contrast-toggle,
 .ghost-button,
 .primary-button,
@@ -219,6 +225,7 @@ a {
 
 .control-chip,
 .flag-button,
+.preferences-toggle,
 .contrast-toggle,
 .ghost-button,
 .secondary-button {
@@ -246,6 +253,23 @@ a {
   min-width: 84px;
   padding: 0.55rem 0.8rem;
   font-weight: 800;
+}
+
+.preferences-toggle {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.8rem 0.95rem;
+  text-align: left;
+  font-weight: 800;
+}
+
+.preferences-summary {
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+  font-weight: 700;
 }
 
 .control-chip[aria-pressed="true"],
@@ -533,6 +557,41 @@ a {
 .tile-progress-copy {
   font-weight: 800;
   color: var(--ink);
+}
+
+.tile-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-height: 46px;
+  margin-top: 1.05rem;
+  padding: 0.7rem 1rem;
+  border-radius: 999px;
+  background: var(--ink);
+  color: #ffffff;
+  font-weight: 800;
+  line-height: 1;
+  box-shadow: 0 12px 28px rgba(16, 32, 51, 0.16);
+}
+
+.tile-action-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.45rem;
+  height: 1.45rem;
+  border-radius: 999px;
+  background: var(--accent-yellow);
+  color: var(--ink);
+  transition: transform 180ms ease;
+}
+
+.training-tile:hover .tile-action-arrow {
+  transform: translateX(2px);
+}
+
+.training-tile.is-complete .tile-action {
+  background: var(--success);
 }
 
 .tile-tags {
@@ -1176,6 +1235,31 @@ body[data-contrast="high"]::before {
 
   .site-header {
     padding-top: 0.8rem;
+  }
+
+  .accessibility-panel.is-ready .preferences-toggle {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .accessibility-panel.is-collapsed {
+    gap: 0;
+    padding: 0.55rem;
+  }
+
+  .accessibility-panel.is-collapsed .preference-controls {
+    display: none;
+  }
+
+  .accessibility-panel.is-collapsed .preferences-toggle {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: #ffffff;
+    box-shadow: 0 12px 28px rgba(16, 32, 51, 0.16);
+  }
+
+  .accessibility-panel.is-collapsed .preferences-summary {
+    color: rgba(255, 255, 255, 0.82);
   }
 
   .brand-cluster h1 {

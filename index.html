@@ -33,49 +33,62 @@
         </div>
 
         <div id="accessibilityPanel" class="accessibility-panel" aria-label="Ułatwienia">
-          <div id="languageGroup" class="control-group" role="group" aria-label="Język">
-            <span id="languageLabel" class="control-label">Język</span>
-            <div id="languagePicker" class="language-picker"></div>
-          </div>
-
-          <div id="textSizeGroup" class="control-group" role="group" aria-label="Wielkość tekstu">
-            <span id="textSizeLabel" class="control-label">Tekst</span>
-            <div class="segmented-control">
-              <button
-                type="button"
-                class="control-chip"
-                data-font-scale="normal"
-                aria-pressed="true"
-              >
-                <span data-font-copy="normal">Zwykły</span>
-              </button>
-              <button
-                type="button"
-                class="control-chip"
-                data-font-scale="large"
-                aria-pressed="false"
-              >
-                <span data-font-copy="large">Większy</span>
-              </button>
-              <button
-                type="button"
-                class="control-chip"
-                data-font-scale="xlarge"
-                aria-pressed="false"
-              >
-                <span data-font-copy="xlarge">Największy</span>
-              </button>
-            </div>
-          </div>
-
           <button
             type="button"
-            id="contrastToggle"
-            class="contrast-toggle"
-            aria-pressed="false"
+            id="preferencesToggle"
+            class="preferences-toggle"
+            aria-expanded="true"
+            aria-controls="preferenceControls"
           >
-            <span id="contrastLabel">Silny kontrast</span>
+            <span id="preferencesToggleLabel">Ustawienia</span>
+            <span id="preferencesToggleSummary" class="preferences-summary"></span>
           </button>
+
+          <div id="preferenceControls" class="preference-controls">
+            <div id="languageGroup" class="control-group" role="group" aria-label="Język">
+              <span id="languageLabel" class="control-label">Język</span>
+              <div id="languagePicker" class="language-picker"></div>
+            </div>
+
+            <div id="textSizeGroup" class="control-group" role="group" aria-label="Wielkość tekstu">
+              <span id="textSizeLabel" class="control-label">Tekst</span>
+              <div class="segmented-control">
+                <button
+                  type="button"
+                  class="control-chip"
+                  data-font-scale="normal"
+                  aria-pressed="true"
+                >
+                  <span data-font-copy="normal">Zwykły</span>
+                </button>
+                <button
+                  type="button"
+                  class="control-chip"
+                  data-font-scale="large"
+                  aria-pressed="false"
+                >
+                  <span data-font-copy="large">Większy</span>
+                </button>
+                <button
+                  type="button"
+                  class="control-chip"
+                  data-font-scale="xlarge"
+                  aria-pressed="false"
+                >
+                  <span data-font-copy="xlarge">Największy</span>
+                </button>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              id="contrastToggle"
+              class="contrast-toggle"
+              aria-pressed="false"
+            >
+              <span id="contrastLabel">Silny kontrast</span>
+            </button>
+          </div>
         </div>
       </header>
 
